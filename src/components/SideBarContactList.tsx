@@ -1,7 +1,3 @@
-import React from "react";
-
-type Props = {};
-
-export default function SideBarContactList({}: Props) {
+export default function SideBarContactList() {
 	return <div>SideBarContactList</div>;
 }

@@ -1,19 +1,30 @@
-import { Form, redirect, useActionData, useLoaderData } from "react-router-dom";
-import { ActionType, Contact } from "../types/type";
+import {
+	Form,
+	LoaderFunctionArgs,
+	redirect,
+	useActionData,
+	useLoaderData,
+} from "react-router-dom";
+import { Contact } from "../types/type";
 import { changeContact, getAllContact } from "../service/contactService";
 
-export async function action({ request }: { request: Request }) {
-	const form = await request.formData();
-	const formToJSON = {} as Contact;
-	for (const [key, value] of [...form.entries()]) {
-		if (key != "type") formToJSON[key] = value;
+export async function action({ request, params }: LoaderFunctionArgs) {
+	const id = params.id;
+	if (!id) {
+		throw new Error("No id found");
 	}
-	formToJSON.favorite = false;
-	console.log("add");
-	const data = await changeContact(
-		"http://localhost:3000/contacts",
-		formToJSON
-	);
+	const form = await request.formData();
+	const myData: Contact = {
+		firstName: form.get("firstName")?.toString() ?? "",
+		lastName: form.get("lastName")?.toString() ?? "",
+		avatar: form.get("avatar")?.toString() ?? "",
+		notes: form.get("notes")?.toString() ?? "",
+		favorite: false,
+		twitter: form.get("twitter")?.toString() ?? "",
+		id: +id | 1,
+	};
+
+	const data = await changeContact("http://localhost:3000/contacts", myData);
 	if (!data.ok) {
 		return { error: data.statusText };
 	} else {
@@ -22,15 +33,25 @@ export async function action({ request }: { request: Request }) {
 	}
 }
 
-export async function patchAction({ request, params }) {
-	const form = await request.formData();
-	const formToJSON = {} as Contact;
-	for (const [key, value] of [...form.entries()]) {
-		if (key != "type") formToJSON[key] = value;
+export async function patchAction({ request, params }: LoaderFunctionArgs) {
+	const id = params.id;
+	if (!id) {
+		throw new Error("No id found");
 	}
+	const form = await request.formData();
+
+	const myData: Contact = {
+		firstName: form.get("firstName")?.toString() ?? "",
+		lastName: form.get("lastName")?.toString() ?? "",
+		avatar: form.get("avatar")?.toString() ?? "",
+		notes: form.get("notes")?.toString() ?? "",
+		favorite: false,
+		twitter: form.get("twitter")?.toString() ?? "",
+		id: +id | 1,
+	};
 	const data = await changeContact(
 		`http://localhost:3000/contacts/${params.id}`,
-		formToJSON,
+		myData,
 		"PATCH"
 	);
 	if (!data.ok) {
@@ -40,7 +61,10 @@ export async function patchAction({ request, params }) {
 	}
 }
 
-export async function loader({ params }) {
+export async function loader({ params }: LoaderFunctionArgs) {
+	if (!params.id) {
+		throw new Error("no params id found");
+	}
 	const id = params.id;
 	const contacts = await getAllContact();
 	return contacts.data.find((contact) => contact.id === +id);

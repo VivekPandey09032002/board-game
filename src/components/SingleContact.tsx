@@ -1,6 +1,7 @@
 import {
 	Form,
 	Link,
+	LoaderFunctionArgs,
 	redirect,
 	useOutletContext,
 	useParams,
@@ -8,7 +9,11 @@ import {
 import { Contact } from "../types/type";
 import { deleteContact } from "../service/contactService";
 
-export async function deleteAction({ params }) {
+// eslint-disable-next-line react-refresh/only-export-components
+export async function deleteAction({ params }: LoaderFunctionArgs) {
+	if (!params.id) {
+		return { error: "no id found" };
+	}
 	const id = +params.id;
 	console.log(id);
 	const data = await deleteContact(`http://localhost:3000/contacts/${id}`);
